@@ -1,0 +1,43 @@
+=== Supply Chain Path Optimizer ===
+Network: 250 nodes, 746 roads (seed 42)
+From warehouse (node 0): 250/250 nodes reachable, farthest is node 213 at 195 km
+
+--- 1. Dijkstra: O(V^2) array vs binary heap (50 sources per size) ---
+Nodes   Roads   Array (us/run)   Heap (us/run)    Speedup 
+200     599     116.5            24.2             4.8x
+500     1497    307.7            78.8             3.9x
+1000    2997    1209.7           150.7            8.0x
+2000    5998    3883.3           316.8            12.3x
+4000    11995   15548.5          691.1            22.5x
+
+--- 2. Delivery tour (TSP heuristics) ---
+Stops (warehouse + 9 customers), tour from NN + 2-opt:
+  0 -> 1 -> 106 -> 193 -> 154 -> 65 -> 225 -> 41 -> 27 -> 79 -> 0
+  Nearest neighbour : 790 km
+  NN + 2-opt        : 659 km (0.0% above optimal)
+  Optimal (exact)   : 659 km (exact search over 9! orderings, pruned)
+  First leg 0 -> 1 is 33 km, road path: 0 > 1
+Quality over 100 random 9-stop instances (vs exact optimum):
+  Nearest neighbour avg gap: 7.0%
+  NN + 2-opt avg gap       : 0.5% (worst 5.5%)
+
+--- 3. Inventory, suppliers and transport (7-day simulation) ---
+  Supplier A: node 76, 86 km from warehouse, unit cost 23, transport 2/km
+  Supplier B: node 148, 41 km from warehouse, unit cost 39, transport 3/km
+  Supplier C: node 222, 50 km from warehouse, unit cost 52, transport 1/km
+Day 1: 0 low-stock item(s)
+Day 2: 2 low-stock item(s)
+  reorder SKU-004 x150 from Supplier A, landed cost 3622
+  reorder SKU-006 x150 from Supplier A, landed cost 3622
+Day 3: 4 low-stock item(s)
+  reorder SKU-001 x150 from Supplier A, landed cost 3622
+  reorder SKU-002 x150 from Supplier A, landed cost 3622
+  reorder SKU-003 x150 from Supplier A, landed cost 3622
+  reorder SKU-005 x150 from Supplier A, landed cost 3622
+Day 4: 0 low-stock item(s)
+Day 5: 0 low-stock item(s)
+Day 6: 0 low-stock item(s)
+Day 7: 2 low-stock item(s)
+  reorder SKU-003 x150 from Supplier A, landed cost 3622
+  reorder SKU-005 x150 from Supplier A, landed cost 3622
+7-day totals: 8 orders, spend 28976, demand served 1180/1180 units (0 short)
